@@ -24,4 +24,4 @@ jobs:
 
       - name: Run watcher
         run: |
-          python ../rss_watch.py
+          python rss_watch.py
