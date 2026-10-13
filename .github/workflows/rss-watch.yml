@@ -15,5 +15,5 @@ jobs:
 
       - name: Run script
         run: |
-          echo "Hello Vänsersborg and Sikhall"
+          echo "Hello Vansersborg and Sikhall"
           date
