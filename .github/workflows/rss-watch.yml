@@ -1,11 +1,22 @@
-name: Test
+name: GP TTELA VBG watch
 
 on:
+  push:
+    branches: [ "main" ]
+
+  schedule:
+    - cron: '0 */4 * * *'
+
   workflow_dispatch:
 
 jobs:
-  test:
+  watch:
     runs-on: ubuntu-latest
 
     steps:
-      - run: echo "Hello"
+      - uses: actions/checkout@v4
+
+      - name: Run script
+        run: |
+          echo "Hello VBG"
+          date
