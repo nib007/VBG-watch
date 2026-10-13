@@ -23,5 +23,4 @@ jobs:
           pip install requests
 
       - name: Run watcher
-        run: |
-          python rss_watch.py
+        run: python .github/rss_watch.py
