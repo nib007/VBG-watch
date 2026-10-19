@@ -7,23 +7,25 @@ on:
 
 jobs:
   search:
+
     runs-on: ubuntu-latest
 
-steps:
-  - uses: actions/checkout@v4
+    steps:
 
-  - uses: actions/setup-python@v5
-     with:
-     python-version: "3.12"
-  
-  - run: pip install requests
+      - uses: actions/checkout@v4
 
-  - run: python nicklas_jobs.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-  env:
-       SMTP_SERVER: ${{ vars.SMTP_SERVER }}
-       SMTP_PORT: ${{ vars.SMTP_PORT }}
-       SMTP_USER: ${{ vars.SMTP_USER }}
-       EMAIL_TO: ${{ vars.EMAIL_TO }}
-        
-       SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      - run: pip install requests
+
+      - name: Run job search
+        env:
+          SMTP_SERVER: ${{ vars.SMTP_SERVER }}
+          SMTP_PORT: ${{ vars.SMTP_PORT }}
+          SMTP_USER: ${{ vars.SMTP_USER }}
+          EMAIL_TO: ${{ vars.EMAIL_TO }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        run: |
+          python nicklas_jobs.py
