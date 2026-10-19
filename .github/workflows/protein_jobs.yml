@@ -18,7 +18,7 @@ jobs:
 
       - run: pip install requests
 
-      - run: python protein_jobs.py
+      - run: python protein_job-search.py
 
         env:
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
