@@ -28,4 +28,4 @@ jobs:
           EMAIL_TO: ${{ vars.EMAIL_TO }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
         run: |
-          python nicklas_jobs.py
+          python scripts/nicklas_jobs.py
