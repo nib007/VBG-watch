@@ -18,7 +18,7 @@ jobs:
 
       - run: pip install requests
 
-      - run: python protein_job-search.py
+      - run: python protein_jobsearch.py
     
     env:
         SMTP_SERVER: ${{ vars.SMTP_SERVER }}
