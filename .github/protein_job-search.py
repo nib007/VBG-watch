@@ -1,6 +1,11 @@
+import os
 import requests
 import smtplib
 from email.mime.text import MIMEText
+
+# =========================
+# Configuration
+# =========================
 
 API_URL = "https://jobsearch.api.jobtechdev.se/search"
 
@@ -10,7 +15,18 @@ SEARCHES = [
     "research engineer protein"
 ]
 
+SMTP_SERVER = os.environ["SMTP_SERVER"]
+SMTP_PORT = int(os.environ["SMTP_PORT"])
+SMTP_USER = os.environ["SMTP_USER"]
+SMTP_PASSWORD = os.environ["SMTP_PASSWORD"]
+EMAIL_TO = os.environ["EMAIL_TO"]
+
+# =========================
+# Functions
+# =========================
+
 def search_jobs(query):
+    print(f"Searching: {query}")
 
     r = requests.get(
         API_URL,
@@ -18,38 +34,56 @@ def search_jobs(query):
             "q": query,
             "limit": 50
         },
-        headers={"accept": "application/json"},
+        headers={
+            "accept": "application/json"
+        },
         timeout=30
     )
 
     r.raise_for_status()
 
-    return r.json().get("hits", [])
+    data = r.json()
 
+    return data.get("hits", [])
+
+
+# =========================
+# Collect jobs
+# =========================
 
 jobs = {}
 
 for query in SEARCHES:
 
-    for job in search_jobs(query):
+    try:
+        results = search_jobs(query)
 
-        url = job.get("webpage_url", "")
+        for job in results:
 
-        if not url:
-            continue
+            url = job.get("webpage_url", "")
 
-        jobs[url] = {
-            "title": job.get("headline", ""),
-            "employer": job.get(
-                "employer",
-                {}
-            ).get("name", ""),
-            "url": url
-        }
+            if not url:
+                continue
+
+            jobs[url] = {
+                "title": job.get("headline", "No title"),
+                "employer": job.get(
+                    "employer",
+                    {}
+                ).get("name", "Unknown employer"),
+                "url": url
+            }
+
+    except Exception as e:
+        print(f"Error searching '{query}': {e}")
+
+# =========================
+# Build email
+# =========================
 
 if not jobs:
-    print("No jobs found")
-    quit()
+    print("No jobs found.")
+    exit(0)
 
 html = """
 <h2>Protein-related jobs</h2>
@@ -60,24 +94,32 @@ for job in jobs.values():
 
     html += f"""
     <li>
-    <a href="{job['url']}">
-    {job['title']}
-    </a>
-    - {job['employer']}
+        <a href="{job['url']}">{job['title']}</a>
+        - {job['employer']}
     </li>
     """
 
 html += "</ul>"
 
 msg = MIMEText(html, "html")
-msg["Subject"] = "Protein Jobs"
-msg["From"] = "github-agent"
+
+msg["Subject"] = f"Protein Jobs ({len(jobs)})"
+msg["From"] = SMTP_USER
 msg["To"] = EMAIL_TO
 
-with smtplib.SMTP_SSL(
-    SMTP_SERVER,
-    int(SMTP_PORT)
-) as smtp:
+# =========================
+# Send email
+# =========================
+
+print("Connecting to SMTP server...")
+
+with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as smtp:
+
+    smtp.ehlo()
+
+    smtp.starttls()
+
+    smtp.ehlo()
 
     smtp.login(
         SMTP_USER,
@@ -86,4 +128,4 @@ with smtplib.SMTP_SSL(
 
     smtp.send_message(msg)
 
-print(f"Sent {len(jobs)} jobs")
+print(f"Sent {len(jobs)} jobs to {EMAIL_TO}")
