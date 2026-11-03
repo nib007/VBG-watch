@@ -26,4 +26,4 @@ jobs:
           EMAIL_TO: ${{ vars.EMAIL_TO }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
         run: |
-          python protein_jobsearch.py
+          python scripts/protein_jobsearch.py
