@@ -1,5 +1,6 @@
 
 import os
+import time
 import requests
 import smtplib
 from email.mime.text import MIMEText
@@ -15,6 +16,10 @@ SEARCHES = [
     "core facility",
     "mammalian cell culture",
 ]
+
+# Retry email delivery up to five times, waiting one hour between attempts.
+EMAIL_RETRIES = 5
+EMAIL_RETRY_DELAY_SECONDS = 60 * 60
 
 SMTP_SERVER = os.environ["SMTP_SERVER"]
 SMTP_PORT = int(os.environ["SMTP_PORT"])
@@ -180,7 +185,8 @@ def send_email(html):
 
     with smtplib.SMTP_SSL(
         SMTP_SERVER,
-        SMTP_PORT
+        SMTP_PORT,
+        timeout=30
     ) as smtp:
 
         smtp.login(
@@ -189,6 +195,25 @@ def send_email(html):
         )
 
         smtp.send_message(msg)
+
+
+def send_email_with_retries(html):
+    # Initial attempt plus up to five retries (six attempts total).
+    for attempt in range(1, EMAIL_RETRIES + 2):
+        try:
+            print(f"Sending email (attempt {attempt}/{EMAIL_RETRIES + 1})...")
+            send_email(html)
+            return
+        except Exception as error:
+            if attempt > EMAIL_RETRIES:
+                print(f"Email delivery failed after {attempt} attempts: {error}")
+                raise
+
+            print(
+                f"Email attempt {attempt} failed: {error}. "
+                f"Retrying in one hour. ({EMAIL_RETRIES - attempt + 1} retries left)"
+            )
+            time.sleep(EMAIL_RETRY_DELAY_SECONDS)
 
 
 def main():
@@ -252,11 +277,10 @@ def main():
 
     html = build_html(jobs_list)
 
-    send_email(html)
+    send_email_with_retries(html)
 
     print("Email sent")
 
 
 if __name__ == "__main__":
     main()
-
