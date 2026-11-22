@@ -2,8 +2,12 @@ name: GP TTELA VBG watch
 
 on:
   schedule:
-    - cron: '0 */4 * * *'
-
+#   - cron: '0 */4 * * *'  
+#   - cron: "0 13 * * 1"       # Every Monday at 13:00 UTC
+#   - cron: "0 */4 * * *"       # Every 4 hours
+#   - cron: "30 8 * * *"        # Every day at 08:30 UTC
+    - cron: "0 13 * * 1-5"      # Monday-Friday at 13:00 UTC
+    
   workflow_dispatch:
 
 jobs:
